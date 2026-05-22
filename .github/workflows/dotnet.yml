@@ -63,30 +63,30 @@ jobs:
       #    de pasar variables inline, que es lo que fallaba antes).
       # ─────────────────────────────────────────
       - name: Deploy to VPS
-          uses: appleboy/ssh-action@v1.2.0
-          with:
-            host: ${{ secrets.VPS_HOST }}
-            username: ${{ secrets.VPS_USER }}
-            password: ${{ secrets.VPS_PASSWORD }}
-            port: 22
-            script: |
-              set -e
-              cd /Ismael/spring-8/tickets/admin
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: 22
+          script: |
+            set -e
+            cd /Ismael/spring-8/tickets/admin
                           
-              echo "── Pull latest image ──"
-              docker pull ${{ secrets.DOCKER_USER }}/admin-tickets:latest
+            echo "── Pull latest image ──"
+            docker pull ${{ secrets.DOCKER_USER }}/admin-tickets:latest
               
-              echo "── Bajar stack anterior ──"
-              docker compose -f docker-compose.prod.yml down --remove-orphans
+            echo "── Bajar stack anterior ──"
+            docker compose -f docker-compose.prod.yml down --remove-orphans
               
-              echo "── Levantar stack ──"
-              docker compose -f docker-compose.prod.yml up -d
+            echo "── Levantar stack ──"
+            docker compose -f docker-compose.prod.yml up -d
               
-              echo "── Verificar estado (esperar healthchecks) ──"
-              sleep 15
-              docker compose -f docker-compose.prod.yml ps
+            echo "── Verificar estado (esperar healthchecks) ──"
+            sleep 15
+            docker compose -f docker-compose.prod.yml ps
               
-              echo "── Remove dangling images ──"
-              docker image prune -f
+            echo "── Remove dangling images ──"
+            docker image prune -f
               
-              echo "✅ Deploy completado"
+            echo "✅ Deploy completado"

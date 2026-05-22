@@ -11,7 +11,7 @@ services:
       context: .
       dockerfile: Dockerfile
 
-    image: admin-tickets:latest
+    image: ${DOCKER_USER}/admin-tickets:latest
 
     ports:
       - "5202:8080"
