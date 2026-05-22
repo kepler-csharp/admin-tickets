@@ -57,10 +57,6 @@ jobs:
             
       # ─────────────────────────────────────────
       # 5. Escribir .env y levantar contenedores en la VPS
-      #
-      #    Se escribe el .env antes del compose up para que
-      #    Docker Compose lo lea automáticamente (sin necesidad
-      #    de pasar variables inline, que es lo que fallaba antes).
       # ─────────────────────────────────────────
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.2.0
