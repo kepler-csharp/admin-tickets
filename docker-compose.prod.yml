@@ -1,5 +1,5 @@
 ﻿# ─────────────────────────────────────────
-# API — ASP.NET Core 10
+# API — ASP.NET Core 10 - PRODUCTION
 # ─────────────────────────────────────────
 version: '3.9'
 
@@ -17,5 +17,9 @@ services:
       - "5202:8080"
 
     restart: unless-stopped
+    
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ApiBaseUrl: "https://api.kepler.andrescortes.dev"
 
 
