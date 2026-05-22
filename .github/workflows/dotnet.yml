@@ -43,13 +43,24 @@ jobs:
           docker push ${{ secrets.DOCKER_USER }}/admin-tickets:latest
 
       # ─────────────────────────────────────────
-      # 4. Deploy en la VPS
+      # 4. Copiar docker-compose.prod.yml a la VPS
+      # ─────────────────────────────────────────
+      - name: Copiar docker-compose.prod.yml a la VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: 22
+          source: "docker-compose.prod.yml"
+          target: "/Ismael/spring-8/tickets/admin"
+            
+      # ─────────────────────────────────────────
+      # 5. Escribir .env y levantar contenedores en la VPS
       #
-      #    El contenedor expone el puerto 8080
-      #    internamente (EXPOSE 8080 en Dockerfile).
-      #    Lo mapeamos al puerto 5201 del host para
-      #    evitar conflicto con otros servicios que
-      #    ya ocupan otros puertos (ej. la API central).
+      #    Se escribe el .env antes del compose up para que
+      #    Docker Compose lo lea automáticamente (sin necesidad
+      #    de pasar variables inline, que es lo que fallaba antes).
       # ─────────────────────────────────────────
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.2.0
@@ -60,28 +71,22 @@ jobs:
           port: 22
           script: |
             set -e
-
+            cd /Ismael/spring-8/tickets/admin
+                          
             echo "── Pull latest image ──"
             docker pull ${{ secrets.DOCKER_USER }}/admin-tickets:latest
-
-            echo "── Stop and remove existing container ──"
-            docker stop admin-tickets 2>/dev/null || true
-            docker rm -f admin-tickets 2>/dev/null || true
-
-            echo "── Run new container ──"
-            docker run -d \
-              --name admin-tickets \
-              --restart unless-stopped \
-              -p 5201:8080 \
-              -e ASPNETCORE_ENVIRONMENT=Production \
-              -e ApiBaseUrl=${{ secrets.API_BASE_URL }} \
-              ${{ secrets.DOCKER_USER }}/admin-tickets:latest
-
-            echo "── Verify container is running ──"
-            sleep 5
-            docker ps --filter "name=admin-tickets"
-
+              
+            echo "── Bajar stack anterior ──"
+            docker compose -f docker-compose.prod.yml down --remove-orphans
+              
+            echo "── Levantar stack ──"
+            docker compose -f docker-compose.prod.yml up -d
+              
+            echo "── Verificar estado (esperar healthchecks) ──"
+            sleep 15
+            docker compose -f docker-compose.prod.yml ps
+              
             echo "── Remove dangling images ──"
             docker image prune -f
-
-            echo "Deploy completed successfully"
+              
+            echo "✅ Deploy completado"
