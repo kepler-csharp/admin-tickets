@@ -1,0 +1,72 @@
+@model AdminPortal.Models.PagedResult<AdminPortal.Models.EventDto>
+@{ ViewData["Title"] = "Eventos"; }
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Eventos</h1>
+        <p class="page-desc">Gestiona la cartelera del teatro</p>
+    </div>
+    <a href="/Events/Create" class="btn-primary">+ Nuevo evento</a>
+</div>
+
+<div class="filter-bar">
+    <a href="/Events" class="filter-pill @(ViewBag.Filter == null ? "active" : "")">Todos</a>
+    <a href="/Events?filter=active" class="filter-pill @(ViewBag.Filter == "active" ? "active" : "")">Activos</a>
+    <a href="/Events?filter=inactive" class="filter-pill @(ViewBag.Filter == "inactive" ? "active" : "")">Inactivos</a>
+</div>
+
+@if (Model == null || !Model.Items.Any())
+{
+    <div class="empty-state">
+        <div class="empty-icon">◈</div>
+        <p>No hay eventos. <a href="/Events/Create">Crea el primero</a>.</p>
+    </div>
+}
+else
+{
+    <div class="events-grid">
+        @foreach (var ev in Model.Items)
+        {
+            <div class="event-card @(ev.IsActive ? "" : "inactive")">
+                <div class="event-poster">
+                    @if (!string.IsNullOrEmpty(ev.PosterUrl))
+                    {
+                        <img src="@ev.PosterUrl" alt="@ev.Name" />
+                    }
+                    else
+                    {
+                        <div class="poster-placeholder">◈</div>
+                    }
+                    <span class="event-type-badge">@ev.Type</span>
+                    <span class="event-status @(ev.IsActive ? "status-active" : "status-inactive")">
+                        @(ev.IsActive ? "Activo" : "Inactivo")
+                    </span>
+                </div>
+                <div class="event-body">
+                    <h3 class="event-title">@ev.Name</h3>
+                    <p class="event-venue">◫ @ev.VenueName · @ev.VenueCity</p>
+                    <p class="event-duration">◷ @ev.DurationMinutes min</p>
+                    <p class="event-desc">@(ev.Description.Length > 80 ? ev.Description[..80] + "…" : ev.Description)</p>
+                </div>
+                <div class="event-actions">
+                    <a href="/Events/Edit/@ev.Id" class="btn-sm btn-edit">Editar</a>
+                    <form method="post" action="/Events/Delete/@ev.Id" style="display:inline" onsubmit="return confirm('¿Eliminar este evento?')">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn-sm btn-delete">Eliminar</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="pagination">
+            @for (int p = 1; p <= Model.TotalPages; p++)
+            {
+                <a href="/Events?page=@p@(ViewBag.Filter != null ? "&filter=" + ViewBag.Filter : "")"
+                   class="page-btn @(Model.Page == p ? "active" : "")">@p</a>
+            }
+        </div>
+    }
+}
