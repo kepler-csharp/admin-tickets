@@ -44,11 +44,12 @@ jobs:
 
       # ─────────────────────────────────────────
       # 4. Deploy en la VPS
-      #    - Detiene el contenedor anterior
-      #    - Descarga la nueva imagen
-      #    - Levanta el contenedor con el nombre
-      #      admin-tickets y la variable de entorno
-      #      ApiBaseUrl apuntando a la API central
+      #
+      #    El contenedor expone el puerto 8080
+      #    internamente (EXPOSE 8080 en Dockerfile).
+      #    Lo mapeamos al puerto 5201 del host para
+      #    evitar conflicto con otros servicios que
+      #    ya ocupan otros puertos (ej. la API central).
       # ─────────────────────────────────────────
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.2.0
@@ -65,13 +66,13 @@ jobs:
 
             echo "── Stop and remove existing container ──"
             docker stop admin-tickets 2>/dev/null || true
-            docker rm   admin-tickets 2>/dev/null || true
+            docker rm -f admin-tickets 2>/dev/null || true
 
             echo "── Run new container ──"
             docker run -d \
               --name admin-tickets \
               --restart unless-stopped \
-              -p 8080:8080 \
+              -p 5201:8080 \
               -e ASPNETCORE_ENVIRONMENT=Production \
               -e ApiBaseUrl=${{ secrets.API_BASE_URL }} \
               ${{ secrets.DOCKER_USER }}/admin-tickets:latest
