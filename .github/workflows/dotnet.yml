@@ -1,0 +1,87 @@
+name: CI/CD — Kepler Admin Portal
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ─────────────────────────────────────────
+      # 1. Checkout del repositorio
+      # ─────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ─────────────────────────────────────────
+      # 2. Login en Docker Hub
+      # ─────────────────────────────────────────
+      - name: Docker Hub login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # ─────────────────────────────────────────
+      # 3. Build y push de la imagen
+      # ─────────────────────────────────────────
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f Dockerfile \
+            -t ${{ secrets.DOCKER_USER }}/admin-tickets:latest \
+            .
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.DOCKER_USER }}/admin-tickets:latest
+
+      # ─────────────────────────────────────────
+      # 4. Deploy en la VPS
+      #
+      #    El contenedor expone el puerto 8080
+      #    internamente (EXPOSE 8080 en Dockerfile).
+      #    Lo mapeamos al puerto 5201 del host para
+      #    evitar conflicto con otros servicios que
+      #    ya ocupan otros puertos (ej. la API central).
+      # ─────────────────────────────────────────
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: 22
+          script: |
+            set -e
+
+            echo "── Pull latest image ──"
+            docker pull ${{ secrets.DOCKER_USER }}/admin-tickets:latest
+
+            echo "── Stop and remove existing container ──"
+            docker stop admin-tickets 2>/dev/null || true
+            docker rm -f admin-tickets 2>/dev/null || true
+
+            echo "── Run new container ──"
+            docker run -d \
+              --name admin-tickets \
+              --restart unless-stopped \
+              -p 5201:8080 \
+              -e ASPNETCORE_ENVIRONMENT=Production \
+              -e ApiBaseUrl=${{ secrets.API_BASE_URL }} \
+              ${{ secrets.DOCKER_USER }}/admin-tickets:latest
+
+            echo "── Verify container is running ──"
+            sleep 5
+            docker ps --filter "name=admin-tickets"
+
+            echo "── Remove dangling images ──"
+            docker image prune -f
+
+            echo "Deploy completed successfully"
