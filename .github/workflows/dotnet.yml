@@ -68,6 +68,11 @@ jobs:
           script: |
             set -e
             cd /Ismael/spring-8/tickets/admin
+
+            echo "── Escribir .env ──"
+            cat > .env << EOF
+            DOCKER_USER=${{ secrets.DOCKER_USER }}
+            EOF
                           
             echo "── Pull latest image ──"
             docker pull ${{ secrets.DOCKER_USER }}/admin-tickets:latest
