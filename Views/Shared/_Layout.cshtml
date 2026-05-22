@@ -25,19 +25,19 @@
             </div>
         </div>
         <nav class="sidebar-nav">
-            <a href="/Dashboard/Index" class="nav-item @(ctrl == "Dashboard" ? "active" : "")">
+            <a asp-controller="Dashboard" asp-action="Index" class="nav-item @(ctrl == "Dashboard" ? "active" : "")">
                 <span class="nav-icon">◉</span><span>Dashboard</span>
             </a>
-            <a href="/Events/index" class="nav-item @(ctrl == "Events" ? "active" : "")">
+            <a asp-controller="Events" asp-action="Index" class="nav-item @(ctrl == "Events" ? "active" : "")">
                 <span class="nav-icon">◈</span><span>Eventos</span>
             </a>
-            <a href="/Showtimes/Index" class="nav-item @(ctrl == "Showtimes" ? "active" : "")">
+            <a asp-controller="Showtimes" asp-action="Index" class="nav-item @(ctrl == "Showtimes" ? "active" : "")">
                 <span class="nav-icon">◷</span><span>Funciones</span>
             </a>
-            <a href="/Venues/Index" class="nav-item @(ctrl == "Venues" ? "active" : "")">
+            <a asp-controller="Venues" asp-action="Index"class="nav-item @(ctrl == "Venues" ? "active" : "")">
                 <span class="nav-icon">◫</span><span>Sedes</span>
             </a>
-            <a href="/Employees/Index" class="nav-item @(ctrl == "Employees" ? "active" : "")">
+            <a asp-controller="Employees" asp-action="Index" class="nav-item @(ctrl == "Employees" ? "active" : "")">
                 <span class="nav-icon">◎</span><span>Empleados</span>
             </a>
         </nav>
