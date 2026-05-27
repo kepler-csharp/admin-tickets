@@ -1,0 +1,37 @@
+@model AdminPortal.Models.EmployeeEditViewModel
+@{ ViewData["Title"] = "Editar empleado"; }
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Editar empleado</h1>
+        <p class="page-desc">@Model.Employee.Email · @string.Join(", ", Model.Employee.Roles)</p>
+    </div>
+    <a asp-action="Index" class="btn-secondary">← Volver</a>
+</div>
+
+<div class="form-card">
+    <form method="post" asp-action="Edit" asp-route-id="@Model.Employee.Id">
+        @Html.AntiForgeryToken()
+        <div class="field-group">
+            <label class="field-label">Nombre completo *</label>
+            <input type="text" name="request.FullName" class="field-input"
+                   value="@Model.Request.FullName" required />
+        </div>
+        <div class="field-group">
+            <label class="field-label">Email *</label>
+            <input type="email" name="request.Email" class="field-input"
+                   value="@Model.Request.Email" required />
+        </div>
+        <div class="field-group">
+            <label class="field-label">Estado</label>
+            <select name="request.IsActive" class="field-input">
+                <option value="true"  @(Model.Request.IsActive ? "selected" : "")>Activo</option>
+                <option value="false" @(!Model.Request.IsActive ? "selected" : "")>Inactivo</option>
+            </select>
+        </div>
+        <div class="form-actions">
+            <a asp-action="Index" class="btn-secondary">Cancelar</a>
+            <button type="submit" class="btn-primary">Guardar cambios</button>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,85 @@
+@model AdminPortal.Models.PagedResult<AdminPortal.Models.UserAdminDto>
+@{ ViewData["Title"] = "Clientes"; }
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Clientes</h1>
+        <p class="page-desc">Gestión de cuentas de clientes registrados</p>
+    </div>
+    <div class="header-meta">Total: <strong>@(Model?.TotalCount ?? 0)</strong></div>
+</div>
+
+@if (Model?.Items?.Count > 0)
+{
+    <div class="table-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Email</th>
+                    <th>Estado</th>
+                    <th>Registrado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model.Items)
+                {
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar-sm">@c.FullName[0]</div>
+                                <span>@c.FullName</span>
+                            </div>
+                        </td>
+                        <td class="text-muted">@c.Email</td>
+                        <td>
+                            <span class="badge @(c.IsActive ? "badge-active" : "badge-inactive")">
+                                @(c.IsActive ? "Activo" : "Inactivo")
+                            </span>
+                        </td>
+                        <td class="text-muted">@c.CreatedAt.ToString("dd MMM yyyy")</td>
+                        <td>
+                            <div class="action-row">
+                                <a asp-action="Edit" asp-route-id="@c.Id" class="btn-table">Editar</a>
+                                @if (c.IsActive)
+                                {
+                                    <form method="post" asp-action="Deactivate" asp-route-id="@c.Id"
+                                          onsubmit="return confirm('¿Desactivar a @c.FullName?')">
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn-table btn-danger">Desactivar</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form method="post" asp-action="Reactivate" asp-route-id="@c.Id">
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn-table btn-success">Reactivar</button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="pagination">
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <a asp-action="Index" asp-route-page="@i"
+                   class="page-btn @(i == Model.Page ? "active" : "")">@i</a>
+            }
+        </div>
+    }
+}
+else
+{
+    <div class="empty-state">
+        <div class="empty-icon">◎</div>
+        <p>No hay clientes registrados.</p>
+    </div>
+}

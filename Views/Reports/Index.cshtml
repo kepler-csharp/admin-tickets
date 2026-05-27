@@ -1,0 +1,37 @@
+@{ ViewData["Title"] = "Reportes"; }
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Reportes</h1>
+        <p class="page-desc">Exportación de datos de ventas</p>
+    </div>
+</div>
+
+<div class="form-card">
+    <h2 class="section-title">Exportar ventas (CSV)</h2>
+    <p class="section-desc">Descarga un archivo CSV con todas las ventas en el rango de fechas seleccionado.</p>
+    <form method="get" asp-action="ExportCsv">
+        <div class="field-row">
+            <div class="field-group">
+                <label class="field-label">Desde *</label>
+                <input type="date" name="from" class="field-input" required
+                       value="@DateTime.Today.AddMonths(-1).ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="field-group">
+                <label class="field-label">Hasta *</label>
+                <input type="date" name="to" class="field-input" required
+                       value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">⬇ Descargar CSV</button>
+        </div>
+    </form>
+</div>
+
+<div class="reports-actions" style="margin-top:1.5rem">
+    <a asp-action="AuditLog" class="card-link-btn">
+        <span class="nav-icon">◎</span>
+        <span>Ver Log de Auditoría</span>
+    </a>
+</div>

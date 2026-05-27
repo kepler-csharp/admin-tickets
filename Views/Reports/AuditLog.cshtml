@@ -1,0 +1,85 @@
+@model AdminPortal.Models.PagedResult<AdminPortal.Models.AuditLogDto>
+@{ ViewData["Title"] = "Log de auditoría"; }
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Log de auditoría</h1>
+        <p class="page-desc">Historial de acciones administrativas</p>
+    </div>
+    <a asp-action="Index" class="btn-secondary">← Reportes</a>
+</div>
+
+<!-- Filtros -->
+<div class="filter-bar">
+    <form method="get" asp-action="AuditLog" class="filter-form">
+        <input type="text" name="adminEmail" class="field-input field-input-sm"
+               placeholder="Email del admin" value="@ViewBag.AdminEmail" />
+        <input type="text" name="action" class="field-input field-input-sm"
+               placeholder="Acción (e.g. UpdateCustomer)" value="@ViewBag.Action" />
+        <input type="date" name="from" class="field-input field-input-sm"
+               value="@(ViewBag.From != null ? ((DateTime)ViewBag.From).ToString("yyyy-MM-dd") : "")" />
+        <input type="date" name="to" class="field-input field-input-sm"
+               value="@(ViewBag.To != null ? ((DateTime)ViewBag.To).ToString("yyyy-MM-dd") : "")" />
+        <button type="submit" class="btn-primary btn-sm">Filtrar</button>
+        <a asp-action="AuditLog" class="btn-secondary btn-sm">Limpiar</a>
+    </form>
+</div>
+
+@if (Model?.Items?.Count > 0)
+{
+    <div class="table-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Admin</th>
+                    <th>Acción</th>
+                    <th>Entidad</th>
+                    <th>ID</th>
+                    <th>Detalle</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model.Items)
+                {
+                    <tr>
+                        <td class="text-muted text-nowrap">@log.CreatedAt.ToString("dd/MM/yy HH:mm")</td>
+                        <td>@log.AdminEmail</td>
+                        <td><span class="badge badge-action">@log.Action</span></td>
+                        <td class="text-muted">@log.EntityType</td>
+                        <td class="text-muted">@(log.EntityId ?? "—")</td>
+                        <td class="text-muted text-sm">
+                            @if (!string.IsNullOrEmpty(log.NewValues))
+                            {
+                                <span title="@log.NewValues">@(log.NewValues.Length > 40 ? log.NewValues[..40] + "…" : log.NewValues)</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="pagination">
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <a asp-action="AuditLog"
+                   asp-route-page="@i"
+                   asp-route-adminEmail="@ViewBag.AdminEmail"
+                   asp-route-action="@ViewBag.Action"
+                   asp-route-from="@ViewBag.From"
+                   asp-route-to="@ViewBag.To"
+                   class="page-btn @(i == Model.Page ? "active" : "")">@i</a>
+            }
+        </div>
+    }
+}
+else
+{
+    <div class="empty-state">
+        <div class="empty-icon">◎</div>
+        <p>No se encontraron registros de auditoría.</p>
+    </div>
+}

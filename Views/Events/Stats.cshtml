@@ -1,0 +1,78 @@
+@model AdminPortal.Models.EventStatsDto
+@{ ViewData["Title"] = "Estadísticas del evento"; }
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">@Model.EventName</h1>
+        <p class="page-desc">Estadísticas de ocupación y ventas</p>
+    </div>
+    <a asp-action="Index" class="btn-secondary">← Eventos</a>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">@Model.TotalOrders</div>
+        <div class="stat-label">Órdenes totales</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">@Model.SoldSeats</div>
+        <div class="stat-label">Boletas vendidas</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">@Model.OccupancyPct.ToString("F1")%</div>
+        <div class="stat-label">Ocupación promedio</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">$@Model.TotalRevenue.ToString("N0")</div>
+        <div class="stat-label">Ingresos totales</div>
+    </div>
+</div>
+
+<div class="progress-bar-container" style="margin:1.5rem 0">
+    <div class="progress-bar-label">
+        <span>@Model.SoldSeats vendidos de @Model.TotalSeats asientos</span>
+        <span>@Model.OccupancyPct.ToString("F1")%</span>
+    </div>
+    <div class="progress-bar">
+        <div class="progress-fill" style="width:@Math.Min(Model.OccupancyPct, 100)%"></div>
+    </div>
+    @if (Model.ReservedSeats > 0)
+    {
+        <p class="text-muted text-sm">@Model.ReservedSeats asientos reservados pendientes · @Model.AvailableSeats disponibles</p>
+    }
+</div>
+
+@if (Model.Showtimes?.Count > 0)
+{
+    <div class="table-card">
+        <h2 class="section-title">Funciones</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Fecha/Hora</th>
+                    <th>Vendidos</th>
+                    <th>Total</th>
+                    <th>Ocupación</th>
+                    <th>Ingresos</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model.Showtimes)
+                {
+                    <tr>
+                        <td>@s.StartTime.ToString("dd MMM yyyy HH:mm")</td>
+                        <td>@s.SoldSeats</td>
+                        <td>@s.TotalSeats</td>
+                        <td>
+                            <div class="mini-bar">
+                                <div class="mini-fill" style="width:@Math.Min(s.OccupancyPct,100)%"></div>
+                                <span>@s.OccupancyPct.ToString("F0")%</span>
+                            </div>
+                        </td>
+                        <td>$@s.Revenue.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
