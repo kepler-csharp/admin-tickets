@@ -1,4 +1,4 @@
-@model AdminPortal.Models.CustomerEditViewModel
+@model admin_tickets.Models.CustomerEditViewModel
 @{ ViewData["Title"] = "Editar cliente"; }
 
 <div class="page-header">
@@ -17,26 +17,43 @@
 <div class="form-card">
     <form method="post" asp-action="Edit" asp-route-id="@Model.User.Id">
         @Html.AntiForgeryToken()
+
         <div class="field-group">
             <label class="field-label">Nombre completo *</label>
-            <input type="text" name="request.FullName" class="field-input"
-                   value="@Model.Request.FullName" required />
+            <input type="text"
+                   name="request.FullName"
+                   class="field-input"
+                   value="@Model.Request.FullName"
+                   required />
         </div>
+
         <div class="field-group">
             <label class="field-label">Email *</label>
-            <input type="email" name="request.Email" class="field-input"
-                   value="@Model.Request.Email" required />
+            <input type="email"
+                   name="request.Email"
+                   class="field-input"
+                   value="@Model.Request.Email"
+                   required />
         </div>
+
         <div class="field-group">
             <label class="field-label">Estado</label>
             <select name="request.IsActive" class="field-input">
-                <option value="true"  @(Model.Request.IsActive ? "selected" : "")>Activo</option>
-                <option value="false" @(!Model.Request.IsActive ? "selected" : "")>Inactivo</option>
+                <option value="true" selected="@(Model.Request.IsActive)">
+                    Activo
+                </option>
+
+                <option value="false" selected="@(!Model.Request.IsActive)">
+                    Inactivo
+                </option>
             </select>
         </div>
+
         <div class="form-actions">
             <a asp-action="Index" class="btn-secondary">Cancelar</a>
-            <button type="submit" class="btn-primary">Guardar cambios</button>
+            <button type="submit" class="btn-primary">
+                Guardar cambios
+            </button>
         </div>
     </form>
 </div>

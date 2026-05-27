@@ -1,0 +1,172 @@
+@model admin_tickets.Models.PagedResult<admin_tickets.Models.UserAdminDto>
+@{ ViewData["Title"] = "Empleados"; }
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Empleados</h1>
+        <p class="page-desc">Gestión de acceso y roles del equipo</p>
+    </div>
+    <button class="btn-primary" onclick="document.getElementById('empModal').classList.add('open')">+ Registrar empleado</button>
+</div>
+
+<div class="roles-grid">
+    <div class="role-card">
+        <div class="role-icon" style="color:#FD7B41">◉</div>
+        <h3 class="role-name">Administrador</h3>
+        <p class="role-desc">Acceso total al panel de administración, métricas, eventos y configuración del sistema.</p>
+        <ul class="role-perms">
+            <li>✓ Panel Admin</li><li>✓ Gestión de eventos</li>
+            <li>✓ Dashboard y métricas</li><li>✓ Gestión de empleados</li>
+        </ul>
+    </div>
+    <div class="role-card">
+        <div class="role-icon" style="color:#EDBF9B">◫</div>
+        <h3 class="role-name">Recepcionista (Taquilla)</h3>
+        <p class="role-desc">Acceso al portal de taquilla para venta presencial de boletas.</p>
+        <ul class="role-perms">
+            <li>✓ Portal Tickets</li><li>✓ Venta presencial</li>
+            <li>✗ Panel Admin</li><li>✗ Portal Access</li>
+        </ul>
+    </div>
+    <div class="role-card">
+        <div class="role-icon" style="color:#DDDCDB">◷</div>
+        <h3 class="role-name">Scanner (Control de acceso)</h3>
+        <p class="role-desc">Acceso exclusivo al portal de control de entrada el día del evento.</p>
+        <ul class="role-perms">
+            <li>✓ Portal Access</li><li>✓ Escaneo de QR</li>
+            <li>✗ Panel Admin</li><li>✗ Portal Tickets</li>
+        </ul>
+    </div>
+</div>
+
+@if (Model?.Items?.Count > 0)
+{
+    <div class="table-card" style="margin-top:2rem">
+        <h2 class="section-title">Empleados registrados</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Empleado</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var emp in Model.Items)
+                {
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar-sm">@emp.FullName[0]</div>
+                                <span>@emp.FullName</span>
+                            </div>
+                        </td>
+                        <td class="text-muted">@emp.Email</td>
+                        <td><span class="badge badge-role">@string.Join(", ", emp.Roles)</span></td>
+                        <td>
+                            <span class="badge @(emp.IsActive ? "badge-active" : "badge-inactive")">
+                                @(emp.IsActive ? "Activo" : "Inactivo")
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-row">
+                                <a asp-action="Edit" asp-route-id="@emp.Id" class="btn-table">Editar</a>
+                                <button class="btn-table" onclick="openResetModal('@emp.Id', '@emp.FullName')">Reset pass</button>
+                                @if (emp.IsActive)
+                                {
+                                    <form method="post" asp-action="Deactivate" asp-route-id="@emp.Id"
+                                          onsubmit="return confirm('¿Desactivar a @emp.FullName?')">
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn-table btn-danger">Desactivar</button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="pagination">
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <a asp-action="Index" asp-route-page="@i"
+                   class="page-btn @(i == Model.Page ? "active" : "")">@i</a>
+            }
+        </div>
+    }
+}
+
+<!-- Modal: Registrar empleado -->
+<div id="empModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2>Registrar empleado</h2>
+            <button class="modal-close" onclick="document.getElementById('empModal').classList.remove('open')">✕</button>
+        </div>
+        <form method="post" action="/Employees/Create">
+            @Html.AntiForgeryToken()
+            <div class="field-group">
+                <label class="field-label">Nombre completo *</label>
+                <input type="text" name="dto.FullName" class="field-input" placeholder="Ana García" required/>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Correo electrónico *</label>
+                <input type="email" name="dto.Email" class="field-input" placeholder="empleado@empresa.com" required/>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Contraseña temporal *</label>
+                <input type="password" name="dto.Password" class="field-input" placeholder="Mínimo 8 caracteres" required minlength="8"/>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Rol *</label>
+                <select name="role" class="field-input" required>
+                    <option value="Admin">Administrador</option>
+                    <option value="Receptionist">Recepcionista (Taquilla)</option>
+                    <option value="Scanner">Scanner (Control de acceso)</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="document.getElementById('empModal').classList.remove('open')">Cancelar</button>
+                <button type="submit" class="btn-primary">Registrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Reset contraseña -->
+<div id="resetModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2>Restablecer contraseña</h2>
+            <button class="modal-close" onclick="document.getElementById('resetModal').classList.remove('open')">✕</button>
+        </div>
+        <p class="modal-desc">Empleado: <strong id="resetEmpName"></strong></p>
+        <form method="post" id="resetForm" action="">
+            @Html.AntiForgeryToken()
+            <div class="field-group">
+                <label class="field-label">Nueva contraseña *</label>
+                <input type="password" name="newPassword" class="field-input" placeholder="Mínimo 8 caracteres" required minlength="8"/>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="document.getElementById('resetModal').classList.remove('open')">Cancelar</button>
+                <button type="submit" class="btn-primary">Restablecer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function openResetModal(id, name) {
+    document.getElementById('resetEmpName').textContent = name;
+    document.getElementById('resetForm').action = '/Employees/ResetPassword/' + id;
+    document.getElementById('resetModal').classList.add('open');
+}
+</script>
+}

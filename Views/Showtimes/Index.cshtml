@@ -1,0 +1,61 @@
+@model admin_tickets.Models.PagedResult<admin_tickets.Models.ShowtimeDto>
+@{ ViewData["Title"] = "Funciones"; }
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Funciones</h1>
+        <p class="page-desc">Programación de presentaciones</p>
+    </div>
+    <a href="/Showtimes/Create" class="btn-primary">+ Nueva función</a>
+</div>
+
+@if (Model == null || !Model.Items.Any())
+{
+    <div class="empty-state">
+        <div class="empty-icon">◷</div>
+        <p>No hay funciones programadas.</p>
+    </div>
+}
+else
+{
+    <div class="table-card">
+        <table class="data-table">
+            <thead>
+                <tr><th>Evento</th><th>Inicio</th><th>Fin</th><th>Precio base</th><th>Disponibles</th><th>Estado</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model.Items)
+                {
+                    var statusClass = s.Status switch {
+                        admin_tickets.Models.ShowtimeStatus.Active    => "badge-active",
+                        admin_tickets.Models.ShowtimeStatus.SoldOut   => "badge-soldout",
+                        admin_tickets.Models.ShowtimeStatus.Cancelled => "badge-inactive",
+                        _                                           => "badge-neutral"
+                    };
+                    <tr>
+                        <td class="font-medium">@s.EventName</td>
+                        <td>@s.StartTime.ToString("dd MMM yyyy HH:mm")</td>
+                        <td>@s.EndTime.ToString("dd MMM yyyy HH:mm")</td>
+                        <td>$@s.BasePrice.ToString("N0")</td>
+                        <td>
+                            <span class="seat-counter">
+                                @s.AvailableSeats / @s.TotalSeats
+                            </span>
+                        </td>
+                        <td><span class="badge @statusClass">@s.Status</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="pagination">
+            @for (int p = 1; p <= Model.TotalPages; p++)
+            {
+                <a href="/Showtimes?page=@p" class="page-btn @(Model.Page == p ? "active" : "")">@p</a>
+            }
+        </div>
+    }
+}

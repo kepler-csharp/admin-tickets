@@ -1,0 +1,73 @@
+@model admin_tickets.Models.PagedResult<admin_tickets.Models.EventDto>
+@{ ViewData["Title"] = "Eventos"; }
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Eventos</h1>
+        <p class="page-desc">Gestión del catálogo de eventos</p>
+    </div>
+    <a asp-action="Create" class="btn-primary">+ Nuevo evento</a>
+</div>
+
+<div class="filter-tabs">
+    <a asp-action="Index" class="tab @(ViewBag.Filter == null ? "active" : "")">Todos</a>
+    <a asp-action="Index" asp-route-filter="active" class="tab @(ViewBag.Filter == "active" ? "active" : "")">Activos</a>
+    <a asp-action="Index" asp-route-filter="inactive" class="tab @(ViewBag.Filter == "inactive" ? "active" : "")">Inactivos</a>
+</div>
+
+@if (Model?.Items?.Count > 0)
+{
+    <div class="events-grid">
+        @foreach (var ev in Model.Items)
+        {
+            <div class="event-card">
+                @if (!string.IsNullOrEmpty(ev.PosterUrl))
+                {
+                    <img src="@ev.PosterUrl" alt="@ev.Name" class="event-poster" />
+                }
+                else
+                {
+                    <div class="event-poster-placeholder">◈</div>
+                }
+                <div class="event-body">
+                    <div class="event-meta">
+                        <span class="event-type">@ev.Type</span>
+                        <span class="badge @(ev.IsActive ? "badge-active" : "badge-inactive")">
+                            @(ev.IsActive ? "Activo" : "Inactivo")
+                        </span>
+                    </div>
+                    <h3 class="event-name">@ev.Name</h3>
+                    <p class="event-venue">@ev.VenueName · @ev.VenueCity</p>
+                    <p class="event-duration">@ev.DurationMinutes min</p>
+                    <div class="event-actions">
+                        <a asp-action="Stats" asp-route-id="@ev.Id" class="btn-table">📊 Stats</a>
+                        <a asp-action="Edit" asp-route-id="@ev.Id" class="btn-table">Editar</a>
+                        <form method="post" asp-action="Delete" asp-route-id="@ev.Id"
+                              onsubmit="return confirm('¿Eliminar evento @ev.Name?')">
+                            @Html.AntiForgeryToken()
+                            <button class="btn-table btn-danger">Eliminar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="pagination">
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <a asp-action="Index" asp-route-page="@i" asp-route-filter="@ViewBag.Filter"
+                   class="page-btn @(i == Model.Page ? "active" : "")">@i</a>
+            }
+        </div>
+    }
+}
+else
+{
+    <div class="empty-state">
+        <div class="empty-icon">◈</div>
+        <p>No hay eventos. <a asp-action="Create" class="link-accent">Crea el primero.</a></p>
+    </div>
+}

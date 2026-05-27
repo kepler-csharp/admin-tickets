@@ -1,4 +1,4 @@
-using AdminPortal.Services;
+using admin_tickets.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

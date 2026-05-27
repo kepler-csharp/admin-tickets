@@ -1,8 +1,8 @@
-using AdminPortal.Models;
-using AdminPortal.Services;
+using admin_tickets.Models;
+using admin_tickets.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AdminPortal.Controllers;
+namespace admin_tickets.Controllers;
 
 public class CustomersController : Controller
 {
